@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Models/background.png</file>
+        <file>Models/black.jpg</file>
+        <file>Models/safari.ico</file>
+        <file>Models/warning_sign.obj</file>
+    </qresource>
+</RCC>
