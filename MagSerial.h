@@ -43,7 +43,7 @@ signals:
     void serialDataReadySend(MatrixXd);
 
 public slots:
-    void doRead();
+    void readCurr();
     void getPortList();
     void initCOM(QString);
     void initCOM_Watcher();

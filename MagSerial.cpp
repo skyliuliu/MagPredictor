@@ -92,13 +92,13 @@ void MagSerial::initCOM(QString comName)
     }
     emit isActive(true);
     qDebug()<<"Open COM OK!";
-    serial->setBaudRate(QSerialPort::Baud115200,QSerialPort::AllDirections);//波特率&读写方向
+    serial->setBaudRate(QSerialPort::Baud115200, QSerialPort::AllDirections);//波特率&读写方向
     serial->setDataBits(QSerialPort::Data8);
     serial->setFlowControl(QSerialPort::NoFlowControl);
     serial->setParity(QSerialPort::NoParity);
     serial->setStopBits(QSerialPort::OneStop);
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
-    connect(serial,SIGNAL(readyRead()),this,SLOT(doRead()));
+    connect(serial,SIGNAL(readyRead()),this,SLOT(readCurr()));
 }
 
 void MagSerial::handleError(QSerialPort::SerialPortError error)
@@ -123,34 +123,14 @@ void MagSerial::closeCOM()
     }
 }
 
-void MagSerial::doRead()
+// 获取发射端的电流
+void MagSerial::readCurr()
 {
     if(serial->isReadable())
     {
         QByteArray info = serial->readAll();
         if(!isDataSizeValid(info))return;
-        const char *data = info.constData(); //无需手动释放内存，指向常量
-        for(int i=0;i<info.size();i+=serialParam->NumOfBytesPerSensor)
-        {
-            int ID = (int)(unsigned char)data[i+6];
-            int BxID = ID - 1;
-            int ByID = ID - 1 + serialParam->NumOfSensors;
-            int BzID = ID - 1 + 2*serialParam->NumOfSensors;
-            if(BzID < serialParam->NumOfFluxDataInTotal)
-            {
-                MagRealData(BxID,0) = -1.5*get2sComplement(((int)(unsigned char)data[i+1]<<8)^((int)(unsigned char)data[i]));
-                MagRealData(ByID,0) = 1.5*get2sComplement(((int)(unsigned char)data[i+3]<<8)^((int)(unsigned char)data[i+2]));
-                MagRealData(BzID,0) = 1.5*get2sComplement(((int)(unsigned char)data[i+5]<<8)^((int)(unsigned char)data[i+4]));
-                if(!isReadyToSendData)isReadyToSendData=true;
-            }
-            else
-            {
-                qDebug()<<__FUNCTION__<<"-Wrong ID read from PCBs"<<" ID:"<<ID;
-                if(isReadyToSendData)isReadyToSendData=false;
-            }
-        }
-        if(isReadyToSendData)
-            emit serialDataReadySend(MagRealData);
+
     }
 }
 

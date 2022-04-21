@@ -29,11 +29,11 @@ private:
     Ui::MagPredictorWidget *ui;
 
     int currentSlave;
-    enum DataMode{Braw_vs_Bkf, Bkf_vs_Bpre} currentMode;
 
     MagSensorParams *myParam;
     //MagLocalizer *myLoc;
-    MagSerial *mySer;
+    MagSerial *sendSer;
+    MagSerial *recvSer;
     MagLocalizerPlus *myLoc;
 
     void initCustomPlot(QCustomPlot *Plot, int sensorId);
@@ -43,7 +43,8 @@ private:
     void clrPlot(QCustomPlot *Plot);
 
 private:
-    enum COMState{connected, disconnected}COM_state;
+    bool COM_state;
+    bool COM_state2;
 
 signals:
     void currentCOM(QString);
@@ -53,17 +54,13 @@ private slots:
     void onPopUpMenu(const QPoint &mousePosition);
     void slot_showOptionDialog();
 
-    void getPlotData(MatrixXd rawData, MatrixXd filteredData,
-                     MatrixXd caliMagData, MatrixXd predictedData);
     void getLocData(MatrixXd);
 
     //select com by button
     void ctrlCOM();
-    void handleCOMOpen(bool);
+    void handleSendCOM(bool);
+    void handleRecvCOM(bool);
 
-    //Slave select
-    void selectSlave(int);
-    void selectMode(int);
 };
 
 #endif /* MAGPREDICTORWIDGET_H_ */

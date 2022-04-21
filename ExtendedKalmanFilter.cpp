@@ -1,3 +1,4 @@
+﻿#pragma warning (disable:4819)
 #include "ExtendedKalmanFilter.h"
 #include <Eigen/Dense>
 using namespace std;

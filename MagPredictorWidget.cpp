@@ -63,53 +63,40 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
 
 
     //serial port init
-    mySer = new MagSerial(0,myParam);
+    sendSer = new MagSerial(0,myParam);
+    recvSer = new MagSerial(0,myParam);
     //localizer init
     myLoc= new MagLocalizerPlus(0, myParam);
     //slot connect
-    //connect(ui->COMList,SIGNAL(showList()),mySer,SLOT(getPortList()));
-    connect(ui->COMBtn,SIGNAL(clicked()),this,SLOT(ctrlCOM()));
-    connect(mySer,SIGNAL(isActive(bool)),this,SLOT(handleCOMOpen(bool)));
-    connect(this,SIGNAL(currentCOM(QString)),mySer,SLOT(initCOM(QString)));
-    connect(mySer,SIGNAL(currentCOMChanged(QStringList)),
+    //connect(ui->COMList,SIGNAL(showList()),sendSer,SLOT(getPortList()));
+    connect(ui->sendCOM,SIGNAL(clicked()),this,SLOT(ctrlCOM()));
+    connect(sendSer,SIGNAL(isActive(bool)),this,SLOT(handleSendCOM(bool)));
+    connect(recvSer,SIGNAL(isActive(bool)),this,SLOT(handleRecvCOM(bool)));
+    connect(this,SIGNAL(currentCOM(QString)),sendSer,SLOT(initCOM(QString)));
+    connect(sendSer,SIGNAL(currentCOMChanged(QStringList)),
             ui->COMList,SLOT(updateListItems(QStringList)));
-    connect(this, SIGNAL(stopCOM()), mySer, SLOT(closeCOM()));
+    connect(this, SIGNAL(stopCOM()), sendSer, SLOT(closeCOM()));
     connect(this, SIGNAL(stopCOM()), myLoc, SLOT(stop()));
 
     qRegisterMetaType<MatrixXd>("MatrixXd");
     qRegisterMetaType<std::vector<MatrixXd>>("std::vector<MatrixXd>");
-    connect(mySer, SIGNAL(serialDataReadySend(MatrixXd)),this->myLoc, SLOT(serialIn(MatrixXd)));
+    connect(sendSer, SIGNAL(serialDataReadySend(MatrixXd)),this->myLoc, SLOT(serialIn(MatrixXd)));
 
-    connect(myLoc,SIGNAL(sendFluxData(MatrixXd,MatrixXd,MatrixXd,MatrixXd)),
-            this,SLOT(getPlotData(MatrixXd,MatrixXd,MatrixXd,MatrixXd)));
     connect(myLoc,SIGNAL(sendMagState(MatrixXd)),this,SLOT(getLocData(MatrixXd)));
-    connect(myLoc,SIGNAL(sendCaliStatus(int)),ui->caliProgressBar,SLOT(setValue(int)));
 
     //slot connect for cmd
-    connect(ui->recalibrateBtn,SIGNAL(clicked(bool)),myLoc,SLOT(reCalibrate()));
+    connect(ui->recvCOM,SIGNAL(clicked(bool)),myLoc,SLOT(reCalibrate()));
     connect(ui->ctnStartBtn,SIGNAL(clicked(bool)),myLoc,SLOT(continuousStart()));
-    //Mode configuration
-    //slave select
     //COM configuration
-    COM_state = disconnected;
+    COM_state = false;
+    COM_state2 = false;
     ui->COMList->addItem("None");
-    currentSlave = 0;
-    for(int i=0;i<myParam->NumOfSensors;i++){
-        ui->SlaveList->addItem("Slave "+QString::number(i+1));
-    }
-
-    connect(ui->SlaveList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectSlave(int)));
-
-    currentMode = Braw_vs_Bkf;
-    ui->ModeList->addItem("Filtering");
-    ui->ModeList->addItem("Prediction");
-    connect(ui->ModeList, SIGNAL(currentIndexChanged(int)),this,SLOT(selectMode(int)));
 
     //Plot
     initCustomPlot(ui->ADCplot, 0);
-    init2CustomPlot(ui->VmsPlot, true);
     initCustomPlot(ui->GyroPlot, 1);
     initCustomPlot(ui->AccPlot, 2);
+    init2CustomPlot(ui->VmsPlot, true);
     init2CustomPlot(ui->OutputPlot, false);
 
     // 显示初始位姿
@@ -299,35 +286,6 @@ void MagPredictorWidget::slot_showOptionDialog()
     //Core::ICore::instance()->showOptionsDialog(tr("MagPredictor"), objectName());
 }
 
-void MagPredictorWidget::getPlotData(MatrixXd rawData, MatrixXd filteredData,
-                                     MatrixXd caliMagData, MatrixXd predictedData){
-    double BxIn0,ByIn0,BzIn0;
-    double BxIn1,ByIn1,BzIn1;
-
-    if(currentMode==Braw_vs_Bkf){
-        BxIn0 = rawData(currentSlave, 0);
-        ByIn0 = rawData(currentSlave+myParam->NumOfSensors, 0);
-        BzIn0 = rawData(currentSlave+2*myParam->NumOfSensors, 0);
-
-        BxIn1 = filteredData(currentSlave, 0);
-        ByIn1 = filteredData(currentSlave+myParam->NumOfSensors, 0);
-        BzIn1 = filteredData(currentSlave+2*myParam->NumOfSensors, 0);
-    }
-    else if(currentMode==Bkf_vs_Bpre){
-        BxIn0 = caliMagData(currentSlave, 0);
-        ByIn0 = caliMagData(currentSlave+myParam->NumOfSensors, 0);
-        BzIn0 = caliMagData(currentSlave+2*myParam->NumOfSensors, 0);
-
-        BxIn1 = predictedData(currentSlave, 0);
-        ByIn1 = predictedData(currentSlave+myParam->NumOfSensors, 0);
-        BzIn1 = predictedData(currentSlave+2*myParam->NumOfSensors, 0);
-    }
-
-    //curve 0
-    plotData(ui->ADCplot,BxIn0,BxIn1);
-    plotData(ui->GyroPlot,ByIn0,ByIn1);
-    plotData(ui->AccPlot,BzIn0,BzIn1);
-}
 
 void MagPredictorWidget::getLocData(MatrixXd x)
 {
@@ -356,7 +314,7 @@ void MagPredictorWidget::getLocData(MatrixXd x)
 }
 
 void MagPredictorWidget::ctrlCOM(){
-    if(COM_state == disconnected){
+    if(!COM_state){
         if(ui->COMList->currentIndex() != -1){
             emit currentCOM(ui->COMList->currentText());
         }
@@ -365,31 +323,34 @@ void MagPredictorWidget::ctrlCOM(){
                                      "Please Check the connection!!");
         }
     }
-    else if(COM_state == connected){
+    else if(COM_state){
         emit stopCOM();
     }
 
 }
 
-void MagPredictorWidget::handleCOMOpen(bool isOpen){
+void MagPredictorWidget::handleSendCOM(bool isOpen){
     if(isOpen){
-        COM_state = connected;
-        ui->COMBtn->setText(QStringLiteral("断开"));
+        COM_state = true;
+        ui->sendCOM->setText(QStringLiteral("发射端断开"));
         ui->COMList->setEnabled(false);
     }
     else{
-        COM_state = disconnected;
-        ui->COMBtn->setText(QStringLiteral("连接"));
+        COM_state = false;
+        ui->sendCOM->setText(QStringLiteral("发射端连接"));
         ui->COMList->setEnabled(true);
     }
 }
 
-void MagPredictorWidget::selectSlave(int index)
-{
-
-}
-
-void MagPredictorWidget::selectMode(int index)
-{
-
+void MagPredictorWidget::handleRecvCOM(bool isOpen){
+    if(isOpen){
+        COM_state2 = true;
+        ui->recvCOM->setText(QStringLiteral("接收端断开"));
+        ui->COMList2->setEnabled(false);
+    }
+    else{
+        COM_state2 = false;
+        ui->sendCOM->setText(QStringLiteral("接收端连接"));
+        ui->COMList->setEnabled(true);
+    }
 }

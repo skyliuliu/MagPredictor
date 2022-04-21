@@ -76,25 +76,7 @@
           <number>0</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Slave ID:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="SlaveList">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>25</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QHBoxLayout" name="horizontalLayout_2"/>
          </item>
          <item>
           <spacer name="horizontalSpacer">
@@ -110,31 +92,7 @@
           </spacer>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Plot Mode:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="ModeList">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>25</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QHBoxLayout" name="horizontalLayout_3"/>
          </item>
         </layout>
        </widget>
@@ -427,26 +385,8 @@ QPushButton:pressed, QPushButton:checked {
          <property name="rightMargin">
           <number>1</number>
          </property>
-         <item row="1" column="3" colspan="2">
-          <widget class="QProgressBar" name="caliProgressBar">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="maximum">
-            <number>300</number>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-           <property name="textDirection">
-            <enum>QProgressBar::TopToBottom</enum>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0" colspan="2">
-          <widget class="QPushButton" name="COMBtn">
+          <widget class="QPushButton" name="sendCOM">
            <property name="minimumSize">
             <size>
              <width>70</width>
@@ -468,12 +408,12 @@ QPushButton:pressed, QPushButton:checked {
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>连接</string>
+            <string>发射端连接</string>
            </property>
           </widget>
          </item>
          <item row="1" column="0" colspan="2">
-          <widget class="QPushButton" name="recalibrateBtn">
+          <widget class="QPushButton" name="recvCOM">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -501,7 +441,7 @@ QPushButton:pressed, QPushButton:checked {
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>校准</string>
+            <string>接收端连接</string>
            </property>
            <property name="default">
             <bool>false</bool>
@@ -540,7 +480,7 @@ QPushButton:pressed, QPushButton:checked {
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>开始定位</string>
+            <string>开始采样</string>
            </property>
            <property name="default">
             <bool>false</bool>
@@ -580,7 +520,82 @@ QPushButton:pressed, QPushButton:checked {
            </property>
           </widget>
          </item>
+         <item row="1" column="3" colspan="2">
+          <widget class="QSerialComboBox" name="COMList2">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="currentText">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3" colspan="2">
+          <widget class="QPushButton" name="ctnStartBtn2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1677215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="text">
+            <string>开始定位</string>
+           </property>
+           <property name="default">
+            <bool>false</bool>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
+        <zorder>COMList</zorder>
+        <zorder>sendCOM</zorder>
+        <zorder>recvCOM</zorder>
+        <zorder>ctnStartBtn</zorder>
+        <zorder>COMList2</zorder>
+        <zorder>ctnStartBtn2</zorder>
        </widget>
       </item>
      </layout>
