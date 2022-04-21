@@ -76,11 +76,12 @@ void MagSerial::initCOM_Watcher()
 {
     comWatchTimer = new QTimer();
     connect(comWatchTimer,SIGNAL(timeout()),this,SLOT(getPortList()));
-    comWatchTimer->start(1000);
+    comWatchTimer->start(5000);
 }
 
 void MagSerial::initCOM(QString comName)
 {
+
     if(serial->isOpen()) closeCOM();
     comWatchTimer->stop();
     serial->setPortName(comName);
@@ -128,8 +129,10 @@ void MagSerial::readCurr()
 {
     if(serial->isReadable())
     {
-        QByteArray info = serial->readAll();
-        if(!isDataSizeValid(info))return;
+        char buff[1024];
+        qint64 dataLen = serial->readLine(buff, sizeof(buff));
+        //QByteArray info = serial->readAll();
+        for(auto& c:buff) qDebug() << __FUNCTION__ << c;
 
     }
 }

@@ -316,7 +316,7 @@ void MagPredictorWidget::getLocData(MatrixXd x)
 void MagPredictorWidget::ctrlCOM(){
     if(!COM_state){
         if(ui->COMList->currentIndex() != -1){
-            emit currentCOM(ui->COMList->currentText());
+            emit currentCOM("COM3");
         }
         else{
             QMessageBox::information(this, "No valid COM port detected",

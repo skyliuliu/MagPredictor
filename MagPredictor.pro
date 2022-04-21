@@ -25,7 +25,7 @@ QMAKE_CXXFLAGS += /MP
 
 INCLUDEPATH += $$PWD/3rdparty/glc_lib \
                $$PWD/3rdparty/eigen-3.3.7
-LIBS += -lopengl32 -lglu32 -lgdi32
+LIBS += -lopengl32 -lglu32 -lgdi32 -lDbgHelp
 
 CopyFile = $$PWD/Models/capsule.3DS
 CopyFile = $$replace(CopyFile, /, \\)
