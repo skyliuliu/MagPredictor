@@ -26,7 +26,7 @@ MagSerial::MagSerial(QObject *parent, MagSensorParams *params)
     isReadyToSendData = false;
 
     //specify the parameters
-    MagRealData = MatrixXd::Zero(params->NumOfFluxDataInTotal,1);
+    currents = QVector<double>(16, 0);
 
     this->moveToThread(serialThread);
     serial->moveToThread(serialThread);
@@ -93,7 +93,8 @@ void MagSerial::initCOM(QString comName)
     }
     emit isActive(true);
     qDebug()<<"Open COM OK!";
-    serial->setBaudRate(QSerialPort::Baud115200, QSerialPort::AllDirections);//波特率&读写方向
+    serial->setBaudRate(921600, QSerialPort::AllDirections);//波特率&读写方向
+    //serial->baudRateChanged(921600, QSerialPort::AllDirections);
     serial->setDataBits(QSerialPort::Data8);
     serial->setFlowControl(QSerialPort::NoFlowControl);
     serial->setParity(QSerialPort::NoParity);
@@ -129,11 +130,25 @@ void MagSerial::readCurr()
 {
     if(serial->isReadable())
     {
-        char buff[1024];
-        qint64 dataLen = serial->readLine(buff, sizeof(buff));
-        //QByteArray info = serial->readAll();
-        for(auto& c:buff) qDebug() << __FUNCTION__ << c;
+        QByteArray info = serial->readAll();
+        QString infoStr(info.constData());
 
+        QRegExp chxReg("(ch\\w:\\d{3})");
+        QStringList chList;
+        int pos = 0;
+        while ((pos = chxReg.indexIn(infoStr, pos)) != -1) {
+            chList << chxReg.cap(1);
+            pos += chxReg.matchedLength();
+        }
+
+        if (!chList.isEmpty()) {
+            QString chx = chList.back();
+            char ch = chx[2].toLatin1();
+            double curr = chx.mid(4, 3).toInt() * 0.01;
+            if (ch > '0' && ch <= '9') currents[ch - '1'] = curr;
+            else currents[ch - 'A' + 9] = curr;
+            emit serialDataReadySend(currents);
+        }
     }
 }
 
@@ -154,6 +169,6 @@ void MagSerial::unpackData(const QByteArray &dataPack)
         qDebug()<<__FUNCTION__<<" -";
         return;
     }
-    const char *data = dataPack.constData(); //无需手动释放内存，指向常量
+//    const char *data = dataPack.constData(); //无需手动释放内存，指向常量
 
 }

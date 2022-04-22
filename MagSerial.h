@@ -30,7 +30,7 @@ private:
 
 private:
     //mag sensor data definition
-    MatrixXd MagRealData;
+    QVector<double> currents;
     QStringList serialPortName;
     bool isReadyToSendData;
     inline bool isDataSizeValid(const QByteArray& data)const;
@@ -40,7 +40,7 @@ private:
 signals:
     void isActive(bool);
     void currentCOMChanged(QStringList);
-    void serialDataReadySend(MatrixXd);
+    void serialDataReadySend(QVector<double>);
 
 public slots:
     void readCurr();

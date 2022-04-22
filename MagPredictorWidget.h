@@ -6,6 +6,8 @@
 
 #include <QKeyEvent>
 #include <QTimer>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 #include "magsensorparams.hpp"
 #include "MagSerial.h"
 #include "MagLocalizerPlus.h"
@@ -27,6 +29,10 @@ public:
 
 private:
     Ui::MagPredictorWidget *ui;
+    QCPBars *currentBar;
+    QVector<double> currentsPlotTicks;
+    QVector<double> vmsPlotTicks;
+    QVector<QCPItemText*> textLabels;
 
     int currentSlave;
 
@@ -53,7 +59,7 @@ signals:
 private slots:
     void onPopUpMenu(const QPoint &mousePosition);
     void slot_showOptionDialog();
-
+    void plotCurrents(QVector<double> currents);
     void getLocData(MatrixXd);
 
     //select com by button

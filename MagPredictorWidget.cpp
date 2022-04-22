@@ -24,6 +24,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
 #include "QtDebug"
 #ifdef __APPLE__
     #include "OpenGL/OpenGL.h"
@@ -34,8 +35,6 @@
 #include <QWheelEvent>
 //#include <coreplugin/icore.h>
 #include <iostream>
-#include <Eigen/Core>
-#include <Eigen/Dense>
 #include <fstream>
 #include <ctime>
 #include <QDebug>
@@ -55,13 +54,11 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
 
 #if 1
     Eigen::initParallel();
-    //qDebug()<<__FUNCTION__<<QThread::currentThreadId();
+
     myParam = new MagSensorParams();
     myParam->setSensorSetPos(0,0,0,0, 12);
-//    myParam->setSensorSetPos(1,40.5,0,0, 12);
-//    myParam->setSensorSetPos(2,-40.5,0,0, 12);
 
-
+    currentBar = new QCPBars(ui->OutputPlot->xAxis, ui->OutputPlot->yAxis);
     //serial port init
     sendSer = new MagSerial(0,myParam);
     recvSer = new MagSerial(0,myParam);
@@ -80,7 +77,9 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
 
     qRegisterMetaType<MatrixXd>("MatrixXd");
     qRegisterMetaType<std::vector<MatrixXd>>("std::vector<MatrixXd>");
-    connect(sendSer, SIGNAL(serialDataReadySend(MatrixXd)),this->myLoc, SLOT(serialIn(MatrixXd)));
+    qRegisterMetaType<QVector<double>>("QVector<double>");
+
+    connect(sendSer, SIGNAL(serialDataReadySend(QVector<double>)),this, SLOT(plotCurrents(QVector<double>)));
 
     connect(myLoc,SIGNAL(sendMagState(MatrixXd)),this,SLOT(getLocData(MatrixXd)));
 
@@ -98,6 +97,7 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
     initCustomPlot(ui->AccPlot, 2);
     init2CustomPlot(ui->VmsPlot, true);
     init2CustomPlot(ui->OutputPlot, false);
+
 
     // 显示初始位姿
     Matrix<double, 7, 1> state0;
@@ -214,21 +214,25 @@ void MagPredictorWidget::init2CustomPlot(QCustomPlot *plot, bool isVms)
                           | QCP::iRangeZoom //可滚轮缩放
                           | QCP::iSelectLegend);//可选中图例
 
-    QCPBars *currentBar = new QCPBars(plot->xAxis, plot->yAxis);
+//    currentBar = new QCPBars(plot->xAxis, plot->yAxis);
     currentBar->setName("currents");
 //    QPen pen = QPen(Qt::green);
 //    currentBar->setPen(pen);
 //    currentBar->setBrush(pen);
 
     // x axis
-    QVector<double> ticks;
     QVector<QString> labels;
     for (int i=1; i<17; ++i) {
-        ticks.push_back(i);
+        if (isVms) vmsPlotTicks.push_back(i);
+        else {
+            currentsPlotTicks.push_back(i);
+            QCPItemText *textLabel = new QCPItemText(plot);
+            textLabels.push_back(textLabel);   // textLabel
+        }
         labels.push_back(QString::number(i));
     }
     QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
-    textTicker->addTicks(ticks, labels);
+    textTicker->addTicks(currentsPlotTicks, labels);
     plot->xAxis->setTicker(textTicker);
     plot->xAxis->setRange(0, 17);
     plot->xAxis->setLabel(QStringLiteral("线圈编号"));
@@ -237,20 +241,19 @@ void MagPredictorWidget::init2CustomPlot(QCustomPlot *plot, bool isVms)
     auto yLabel = isVms ? QStringLiteral("inducedVoltage (uV)") : QStringLiteral("coil current (A)");
     plot->yAxis->setLabel(yLabel);
 
-    QVector<double> currents;
-    currents << 2.21 << 2.22 << 2.31<< 2.39<< 2.33<< 2.31<< 2.29<< 2.34<< 2.29<< 2.38<< 2.36<< 2.31<< 2.35<< 2.41<< 2.42<< 2.35;
-    currentBar->setData(ticks, currents);
+}
+
+void MagPredictorWidget::plotCurrents(QVector<double> currents) {
+    currentBar->setData(currentsPlotTicks, currents);
 
     for (int i=0; i<16; ++i) {
-        QCPItemText *textLabel = new QCPItemText(plot);
-        textLabel->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
-        textLabel->position->setType(QCPItemPosition::ptPlotCoords);
-        textLabel->position->setCoords(i + 1, currents[i] + 0.2);
-        textLabel->setText(QString::number(currents[i]));
-        textLabel->setPen(QPen(Qt::blue));
+        textLabels[i]->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+        textLabels[i]->position->setType(QCPItemPosition::ptPlotCoords);
+        textLabels[i]->position->setCoords(i + 1, currents[i] + 0.2);
+        textLabels[i]->setText(QString::number(currents[i]));
+        textLabels[i]->setPen(QPen(Qt::blue));
     }
-
-    //plot->legend->setVisible(true);
+    ui->OutputPlot->replot();
 }
 
 void MagPredictorWidget::plotData(QCustomPlot *Plot, double in1, double in2)
