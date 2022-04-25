@@ -25,7 +25,6 @@ private:
     MagSensorParams *serialParam;
     QThread *serialThread;
     QSerialPort *serial;
-    QStringList comPortList;
     QTimer *comWatchTimer;
 
 private:
@@ -44,11 +43,10 @@ signals:
 
 public slots:
     void readCurr();
-    void getPortList();
     void initCOM(QString);
     void initCOM_Watcher();
-    void handleError(QSerialPort::SerialPortError);
     void closeCOM();
+    void handleError(QSerialPort::SerialPortError);
 };
 
 #endif // MAGSERIAL_H

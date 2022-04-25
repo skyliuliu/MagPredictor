@@ -385,17 +385,23 @@ QPushButton:pressed, QPushButton:checked {
          <property name="rightMargin">
           <number>1</number>
          </property>
-         <item row="0" column="0" colspan="2">
-          <widget class="QPushButton" name="sendCOM">
+         <item row="2" column="3" colspan="2">
+          <widget class="QPushButton" name="ctnStartBtn2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>70</width>
+             <width>80</width>
              <height>30</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>16777215</width>
+             <width>1677215</width>
              <height>16777215</height>
             </size>
            </property>
@@ -408,7 +414,13 @@ QPushButton:pressed, QPushButton:checked {
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>发射端连接</string>
+            <string>开始定位</string>
+           </property>
+           <property name="default">
+            <bool>false</bool>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -428,8 +440,8 @@ QPushButton:pressed, QPushButton:checked {
            </property>
            <property name="maximumSize">
             <size>
-             <width>1677215</width>
-             <height>16777215</height>
+             <width>240</width>
+             <height>30</height>
             </size>
            </property>
            <property name="font">
@@ -490,83 +502,23 @@ QPushButton:pressed, QPushButton:checked {
            </property>
           </widget>
          </item>
-         <item row="0" column="3" colspan="2">
-          <widget class="QSerialComboBox" name="COMList">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="editable">
-            <bool>false</bool>
-           </property>
-           <property name="currentText">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3" colspan="2">
-          <widget class="QSerialComboBox" name="COMList2">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="editable">
-            <bool>false</bool>
-           </property>
-           <property name="currentText">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="3" colspan="2">
-          <widget class="QPushButton" name="ctnStartBtn2">
+         <item row="0" column="0" colspan="3">
+          <widget class="QPushButton" name="sendCOM">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
            <property name="minimumSize">
             <size>
-             <width>80</width>
+             <width>224</width>
              <height>30</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>1677215</width>
+             <width>16777215</width>
              <height>16777215</height>
             </size>
            </property>
@@ -579,23 +531,49 @@ QPushButton:pressed, QPushButton:checked {
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>开始定位</string>
+            <string>发射端连接</string>
            </property>
-           <property name="default">
-            <bool>false</bool>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QLineEdit" name="comEdit1">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="flat">
-            <bool>false</bool>
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>COM1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QLineEdit" name="comEdit2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>COM2</string>
            </property>
           </widget>
          </item>
         </layout>
-        <zorder>COMList</zorder>
-        <zorder>sendCOM</zorder>
-        <zorder>recvCOM</zorder>
-        <zorder>ctnStartBtn</zorder>
-        <zorder>COMList2</zorder>
-        <zorder>ctnStartBtn2</zorder>
        </widget>
       </item>
      </layout>
@@ -616,11 +594,6 @@ QPushButton:pressed, QPushButton:checked {
    <extends>QWidget</extends>
    <header location="global">glwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QSerialComboBox</class>
-   <extends>QComboBox</extends>
-   <header location="global">qserialcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

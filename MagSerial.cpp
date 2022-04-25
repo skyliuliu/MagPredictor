@@ -26,7 +26,7 @@ MagSerial::MagSerial(QObject *parent, MagSensorParams *params)
     isReadyToSendData = false;
 
     //specify the parameters
-    currents = QVector<double>(16, 0);
+    currents = QVector<double>(16, 2);
 
     this->moveToThread(serialThread);
     serial->moveToThread(serialThread);
@@ -43,39 +43,9 @@ MagSerial::~MagSerial(){
     qDebug()<<__FUNCTION__<<"stop";
 }
 
-void MagSerial::getPortList()
-{
-    QStringList tempPort;
-    foreach(const QSerialPortInfo &info,QSerialPortInfo::availablePorts())
-    {
-        tempPort<<info.portName();
-    }
-
-    //检查是否有删除掉的port
-    if(serialPortName.size()>tempPort.size()){
-        foreach(const QString &port, serialPortName){
-            if(!tempPort.contains(port)){
-                serialPortName.removeOne(port);
-                emit currentCOMChanged(serialPortName);
-            }
-        }
-    }
-    //检查是否有需要更新新增的port
-    else{
-        foreach(const QString &port, tempPort){
-            if(!serialPortName.contains(port)){
-                serialPortName<<port;
-                emit currentCOMChanged(serialPortName);
-            }
-        }
-    }
-
-}
-
 void MagSerial::initCOM_Watcher()
 {
     comWatchTimer = new QTimer();
-    connect(comWatchTimer,SIGNAL(timeout()),this,SLOT(getPortList()));
     comWatchTimer->start(5000);
 }
 
@@ -87,14 +57,13 @@ void MagSerial::initCOM(QString comName)
     serial->setPortName(comName);
     if(!serial->open(QIODevice::ReadWrite))//用ReadWrite 的模式尝试打开串口
     {
-        qDebug()<<"Failed to open COM!";
+        qDebug() << "Failed to open" << comName;
         emit isActive(false);
         return;
     }
     emit isActive(true);
-    qDebug()<<"Open COM OK!";
+    qDebug() << "Open" << comName << "OK!";
     serial->setBaudRate(921600, QSerialPort::AllDirections);//波特率&读写方向
-    //serial->baudRateChanged(921600, QSerialPort::AllDirections);
     serial->setDataBits(QSerialPort::Data8);
     serial->setFlowControl(QSerialPort::NoFlowControl);
     serial->setParity(QSerialPort::NoParity);

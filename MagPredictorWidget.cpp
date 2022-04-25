@@ -65,13 +65,11 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
     //localizer init
     myLoc= new MagLocalizerPlus(0, myParam);
     //slot connect
-    //connect(ui->COMList,SIGNAL(showList()),sendSer,SLOT(getPortList()));
     connect(ui->sendCOM,SIGNAL(clicked()),this,SLOT(ctrlCOM()));
     connect(sendSer,SIGNAL(isActive(bool)),this,SLOT(handleSendCOM(bool)));
     connect(recvSer,SIGNAL(isActive(bool)),this,SLOT(handleRecvCOM(bool)));
     connect(this,SIGNAL(currentCOM(QString)),sendSer,SLOT(initCOM(QString)));
-    connect(sendSer,SIGNAL(currentCOMChanged(QStringList)),
-            ui->COMList,SLOT(updateListItems(QStringList)));
+    //connect(this,SIGNAL(currentCOM(QString)),recvSer,SLOT(initCOM(QString)));
     connect(this, SIGNAL(stopCOM()), sendSer, SLOT(closeCOM()));
     connect(this, SIGNAL(stopCOM()), myLoc, SLOT(stop()));
 
@@ -89,7 +87,6 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
     //COM configuration
     COM_state = false;
     COM_state2 = false;
-    ui->COMList->addItem("None");
 
     //Plot
     initCustomPlot(ui->ADCplot, 0);
@@ -317,31 +314,18 @@ void MagPredictorWidget::getLocData(MatrixXd x)
 }
 
 void MagPredictorWidget::ctrlCOM(){
-    if(!COM_state){
-        if(ui->COMList->currentIndex() != -1){
-            emit currentCOM("COM3");
-        }
-        else{
-            QMessageBox::information(this, "No valid COM port detected",
-                                     "Please Check the connection!!");
-        }
-    }
-    else if(COM_state){
-        emit stopCOM();
-    }
-
+    if(!COM_state) emit currentCOM(ui->comEdit1->text());
+    else if(COM_state) emit stopCOM();
 }
 
 void MagPredictorWidget::handleSendCOM(bool isOpen){
     if(isOpen){
         COM_state = true;
         ui->sendCOM->setText(QStringLiteral("发射端断开"));
-        ui->COMList->setEnabled(false);
     }
     else{
         COM_state = false;
         ui->sendCOM->setText(QStringLiteral("发射端连接"));
-        ui->COMList->setEnabled(true);
     }
 }
 
@@ -349,11 +333,9 @@ void MagPredictorWidget::handleRecvCOM(bool isOpen){
     if(isOpen){
         COM_state2 = true;
         ui->recvCOM->setText(QStringLiteral("接收端断开"));
-        ui->COMList2->setEnabled(false);
     }
     else{
         COM_state2 = false;
         ui->sendCOM->setText(QStringLiteral("接收端连接"));
-        ui->COMList->setEnabled(true);
     }
 }
