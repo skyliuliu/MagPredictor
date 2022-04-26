@@ -109,6 +109,16 @@ void MagSerial::readCurr()
 }
 
 void MagSerial::wirteSendSer(QString cmdStr) {
-    cmdStr.replace(" ", "");
-    qDebug() << cmdStr.toLocal8Bit();
+    QStringList cmdList = cmdStr.split(" ");
+    QByteArray cmdArray;
+    foreach(QString s, cmdList) cmdArray.append((char)s.toInt(0, 16));
+    auto r = serial->write(cmdArray);
+
+    if (r == -1) {
+        qDebug() << "cmd error!";
+        return;
+    }
+
+    (cmdList[2] == "1" || cmdList[2] == "01") ? qDebug() << "start working!" : qDebug() << "stop working!";
+
 }

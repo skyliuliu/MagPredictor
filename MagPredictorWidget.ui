@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MagPredictorWidget</class>
  <widget class="QWidget" name="MagPredictorWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -470,6 +473,9 @@ QPushButton:pressed, QPushButton:checked {
          </item>
          <item row="1" column="2">
           <widget class="QPushButton" name="ctnStartBtn">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -520,6 +526,9 @@ QPushButton:pressed, QPushButton:checked {
              <width>200</width>
              <height>0</height>
             </size>
+           </property>
+           <property name="text">
+            <string>EB 90 1 32 05 01 90 00 00 00 AA 55</string>
            </property>
           </widget>
          </item>
