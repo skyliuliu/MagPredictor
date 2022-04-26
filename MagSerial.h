@@ -11,6 +11,7 @@
 #include "filtercommon.h"
 #include "magsensorparams.hpp"
 
+
 using namespace std;
 using namespace Eigen;
 
@@ -30,7 +31,6 @@ private:
 private:
     //mag sensor data definition
     QVector<double> currents;
-    QStringList serialPortName;
     bool isReadyToSendData;
     inline bool isDataSizeValid(const QByteArray& data)const;
     inline bool isDataIDValid(const int& ID)const;
@@ -45,8 +45,8 @@ public slots:
     void readCurr();
     void initCOM(QString);
     void initCOM_Watcher();
-    void closeCOM();
-    void handleError(QSerialPort::SerialPortError);
+    void closeCOM(QString);
+    void wirteSendSer(QString);
 };
 
 #endif // MAGSERIAL_H

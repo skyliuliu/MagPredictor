@@ -22,7 +22,6 @@ MagSerial::MagSerial(QObject *parent, MagSensorParams *params)
     serial = new QSerialPort();
     serialThread = new QThread();
     serialParam = params;
-
     isReadyToSendData = false;
 
     //specify the parameters
@@ -36,7 +35,6 @@ MagSerial::MagSerial(QObject *parent, MagSensorParams *params)
 }
 
 MagSerial::~MagSerial(){
-    closeCOM();
     comWatchTimer->stop();
     serialThread->quit();
     serialThread->wait();
@@ -51,8 +49,7 @@ void MagSerial::initCOM_Watcher()
 
 void MagSerial::initCOM(QString comName)
 {
-
-    if(serial->isOpen()) closeCOM();
+    if(serial->isOpen()) closeCOM(comName);
     comWatchTimer->stop();
     serial->setPortName(comName);
     if(!serial->open(QIODevice::ReadWrite))//用ReadWrite 的模式尝试打开串口
@@ -72,15 +69,8 @@ void MagSerial::initCOM(QString comName)
     connect(serial,SIGNAL(readyRead()),this,SLOT(readCurr()));
 }
 
-void MagSerial::handleError(QSerialPort::SerialPortError error)
-{
-    if(error == QSerialPort::ResourceError){
-        //qDebug()<<"串口断开连接,关闭串口线程";
-        closeCOM();
-    }
-}
 
-void MagSerial::closeCOM()
+void MagSerial::closeCOM(QString comName)
 {
     disconnect(serial, SIGNAL(readyRead()), 0, 0); //断开所有和读取相关的信号
     if(!comWatchTimer->isActive()){
@@ -88,10 +78,7 @@ void MagSerial::closeCOM()
     }
     serial->clear();
     serial->close();
-    if(serial->isOpen()==false)
-    {
-        emit isActive(false);
-    }
+    qDebug() << "Close" << comName << "OK!";
 }
 
 // 获取发射端的电流
@@ -121,23 +108,7 @@ void MagSerial::readCurr()
     }
 }
 
-inline bool MagSerial::isDataSizeValid(const QByteArray &data)const
-{
-    return data.size()%serialParam->NumOfBytesPerSensor == 0;
-}
-
-inline bool MagSerial::isDataIDValid(const int &ID)const
-{
-    return serialParam->SensorIDLIB.contains(ID);
-}
-
-void MagSerial::unpackData(const QByteArray &dataPack)
-{
-    if(!isDataSizeValid(dataPack))
-    {
-        qDebug()<<__FUNCTION__<<" -";
-        return;
-    }
-//    const char *data = dataPack.constData(); //无需手动释放内存，指向常量
-
+void MagSerial::wirteSendSer(QString cmdStr) {
+    cmdStr.replace(" ", "");
+    qDebug() << cmdStr.toLocal8Bit();
 }

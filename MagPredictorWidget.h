@@ -53,8 +53,11 @@ private:
     bool COM_state2;
 
 signals:
-    void currentCOM(QString);
-    void stopCOM();
+    void currentSendCOM(QString);
+    void currentRecvCOM(QString);
+    void stopSendCOM(QString);
+    void stopRecvCOM(QString);
+    void sendCMD(QString);
 
 private slots:
     void onPopUpMenu(const QPoint &mousePosition);
@@ -63,9 +66,9 @@ private slots:
     void getLocData(MatrixXd);
 
     //select com by button
-    void ctrlCOM();
-    void handleSendCOM(bool);
-    void handleRecvCOM(bool);
+    void connectSendCOM();
+    void connectRecvCOM();
+    void ctrlSendCOM();
 
 };
 

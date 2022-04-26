@@ -30,7 +30,6 @@
     #include "OpenGL/OpenGL.h"
 #endif
 #include "MagPredictorwidget.h"
-#include "ui_MagPredictorwidget.h"
 
 #include <QWheelEvent>
 //#include <coreplugin/icore.h>
@@ -39,6 +38,7 @@
 #include <ctime>
 #include <QDebug>
 #include "MagLocalizerPlus.h"
+#include "ui_MagPredictorwidget.h"
 
 using namespace Eigen;
 
@@ -60,18 +60,20 @@ MagPredictorWidget::MagPredictorWidget(QWidget *parent) : QWidget(parent),
 
     currentBar = new QCPBars(ui->OutputPlot->xAxis, ui->OutputPlot->yAxis);
     //serial port init
-    sendSer = new MagSerial(0,myParam);
-    recvSer = new MagSerial(0,myParam);
+    sendSer = new MagSerial(0, myParam);
+    recvSer = new MagSerial(0, myParam);
     //localizer init
     myLoc= new MagLocalizerPlus(0, myParam);
-    //slot connect
-    connect(ui->sendCOM,SIGNAL(clicked()),this,SLOT(ctrlCOM()));
-    connect(sendSer,SIGNAL(isActive(bool)),this,SLOT(handleSendCOM(bool)));
-    connect(recvSer,SIGNAL(isActive(bool)),this,SLOT(handleRecvCOM(bool)));
-    connect(this,SIGNAL(currentCOM(QString)),sendSer,SLOT(initCOM(QString)));
-    //connect(this,SIGNAL(currentCOM(QString)),recvSer,SLOT(initCOM(QString)));
-    connect(this, SIGNAL(stopCOM()), sendSer, SLOT(closeCOM()));
-    connect(this, SIGNAL(stopCOM()), myLoc, SLOT(stop()));
+    //QPushButton click
+    connect(ui->sendCOM, SIGNAL(clicked()), this, SLOT(connectSendCOM()));
+    connect(ui->recvCOM, SIGNAL(clicked()), this, SLOT(connectRecvCOM()));
+    connect(ui->ctnStartBtn, SIGNAL(clicked()), this, SLOT(ctrlSendCOM()));
+    // communicate with com
+    connect(this, SIGNAL(currentSendCOM(QString)), sendSer, SLOT(initCOM(QString)));
+    connect(this, SIGNAL(currentRecvCOM(QString)), recvSer, SLOT(initCOM(QString)));
+    connect(this, SIGNAL(stopSendCOM(QString)), sendSer, SLOT(closeCOM(QString)));
+    connect(this, SIGNAL(stopRecvCOM(QString)), recvSer, SLOT(closeCOM(QString)));
+    connect(this, SIGNAL(sendCMD(QString)), sendSer, SLOT(wirteSendSer(QString)));
 
     qRegisterMetaType<MatrixXd>("MatrixXd");
     qRegisterMetaType<std::vector<MatrixXd>>("std::vector<MatrixXd>");
@@ -313,29 +315,39 @@ void MagPredictorWidget::getLocData(MatrixXd x)
     ui->glwidget_Mag3D->updateCapsuleState(-a, -b, c, q0, -q1, -q2, q3);
 }
 
-void MagPredictorWidget::ctrlCOM(){
-    if(!COM_state) emit currentCOM(ui->comEdit1->text());
-    else if(COM_state) emit stopCOM();
-}
 
-void MagPredictorWidget::handleSendCOM(bool isOpen){
-    if(isOpen){
-        COM_state = true;
+
+void MagPredictorWidget::connectSendCOM(){
+    if(!COM_state) {
+        emit currentSendCOM(ui->comEdit1->text());
         ui->sendCOM->setText(QStringLiteral("发射端断开"));
+        COM_state = true;
+        ui->ctnStartBtn->setEnabled(true);
     }
-    else{
-        COM_state = false;
+    else {
+        emit stopSendCOM(ui->comEdit1->text());
         ui->sendCOM->setText(QStringLiteral("发射端连接"));
+        COM_state = false;
+        ui->ctnStartBtn->setEnabled(false);
     }
 }
 
-void MagPredictorWidget::handleRecvCOM(bool isOpen){
-    if(isOpen){
-        COM_state2 = true;
+void MagPredictorWidget::connectRecvCOM(){
+    if(!COM_state2) {
+        emit currentRecvCOM(ui->comEdit2->text());
         ui->recvCOM->setText(QStringLiteral("接收端断开"));
+        ui->recvCOM->setFlat(false);
+        COM_state2 = true;
     }
-    else{
+    else {
+        emit stopRecvCOM(ui->comEdit2->text());
+        ui->recvCOM->setText(QStringLiteral("接收端连接"));
+        ui->recvCOM->setFlat(true);
         COM_state2 = false;
-        ui->sendCOM->setText(QStringLiteral("接收端连接"));
     }
+}
+
+void MagPredictorWidget::ctrlSendCOM() {
+    QString cmdStr = ui->lineEdit->text();
+    emit sendCMD(cmdStr);
 }
